@@ -35,5 +35,4 @@ public class VacationPayService {
         return new VacationResponseDto(dailyRate, vacationPay);
     }
 
-
 }

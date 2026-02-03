@@ -10,12 +10,10 @@ public class VacationRequestDto {
     public VacationRequestDto() {
     }
 
-
     public VacationRequestDto(BigDecimal averageMonthlySalary, int vacationDays) {
         this.averageMonthlySalary = averageMonthlySalary;
         this.vacationDays = vacationDays;
     }
-
 
     public BigDecimal getAverageMonthlySalary() {
         return averageMonthlySalary;
@@ -31,8 +29,8 @@ public class VacationRequestDto {
         return vacationDays;
     }
 
-
     public void setVacationDays(int vacationDays) {
         this.vacationDays = vacationDays;
     }
+
 }

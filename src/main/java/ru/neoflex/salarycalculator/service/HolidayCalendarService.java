@@ -1,11 +1,14 @@
 package ru.neoflex.salarycalculator.service;
 
+import org.springframework.stereotype.Service;
+
 import java.time.LocalDate;
 import java.time.MonthDay;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@Service
 public class HolidayCalendarService implements HolidayCalendar {
 
     /*
@@ -55,4 +58,5 @@ public class HolidayCalendarService implements HolidayCalendar {
         }
         return holidays;
     }
+
 }

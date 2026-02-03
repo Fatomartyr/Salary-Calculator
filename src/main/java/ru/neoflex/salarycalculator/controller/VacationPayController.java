@@ -18,9 +18,8 @@ public class VacationPayController {
         this.vacationPayService = vacationPayService;
     }
 
-
-        @GetMapping("/calculate")
-        public VacationResponseDto calculate(@ModelAttribute VacationRequestDto request) {
-            return vacationPayService.calculateVacation(request);
-        }
+    @GetMapping("/calculate")
+    public VacationResponseDto calculate(@ModelAttribute VacationRequestDto request) {
+        return vacationPayService.calculateVacation(request);
+    }
 }
