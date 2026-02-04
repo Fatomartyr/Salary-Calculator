@@ -1,14 +1,14 @@
 package ru.neoflex.salarycalculator.controller;
 
-import org.springframework.boot.availability.ApplicationAvailabilityBean;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.neoflex.salarycalculator.dto.VacationRequestDto;
 import ru.neoflex.salarycalculator.dto.VacationResponseDto;
 import ru.neoflex.salarycalculator.service.VacationPayService;
-import ru.neoflex.salarycalculator.util.DateParseUtil;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/vacation-calculator")
@@ -23,19 +23,10 @@ public class VacationPayController {
     @GetMapping
     public VacationResponseDto calculateVacation(
             @RequestParam BigDecimal averageMonthlySalary,
-            @RequestParam Integer vacationDays,
+            @RequestParam int vacationDays,
             @RequestParam(required = false) String startDate) {
 
-        LocalDate parsedStartDate = null;
-        if (startDate != null && !startDate.trim().isEmpty()) {
-            parsedStartDate = DateParseUtil.parseDateWithFallback(startDate);
-        }
-        VacationRequestDto request = new VacationRequestDto(
-                parsedStartDate,
-                averageMonthlySalary,
-                vacationDays
-        );
-
+        VacationRequestDto request = new VacationRequestDto(averageMonthlySalary, vacationDays, startDate);
         return vacationPayService.calculateVacation(request);
     }
 

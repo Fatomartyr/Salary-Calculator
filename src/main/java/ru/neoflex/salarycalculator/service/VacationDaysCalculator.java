@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 import ru.neoflex.salarycalculator.entity.VacationPeriod;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Component
 public class VacationDaysCalculator {
@@ -28,9 +29,9 @@ public class VacationDaysCalculator {
             }
             currentVacationDay = currentVacationDay.plusDays(1);
         }
-
         LocalDate endDate = startDate.plusDays(calendarDays - 1);
-        return new VacationPeriod(calendarDays, startDate, endDate, vacationDays);
+        List<LocalDate> holidays = holidayCalendar.getHolidaysBetween(startDate, endDate);
+        return new VacationPeriod(calendarDays, startDate, endDate, vacationDays, holidays);
     }
 
 }

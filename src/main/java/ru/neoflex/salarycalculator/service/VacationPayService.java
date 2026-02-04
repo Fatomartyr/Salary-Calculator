@@ -1,18 +1,24 @@
 package ru.neoflex.salarycalculator.service;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import ru.neoflex.salarycalculator.dto.VacationRequestDto;
 import ru.neoflex.salarycalculator.dto.VacationResponseDto;
 import ru.neoflex.salarycalculator.entity.VacationPeriod;
+import ru.neoflex.salarycalculator.exception.BadRequestException;
+import ru.neoflex.salarycalculator.exception.DateParseException;
 import ru.neoflex.salarycalculator.properties.VacationProperties;
+import ru.neoflex.salarycalculator.util.DateParseUtil;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 
 @Service
 public class VacationPayService {
 
+    private static final Logger log = LoggerFactory.getLogger(VacationPayService.class);
     private static final BigDecimal AVERAGE_DAYS_IN_MONTH = new BigDecimal("29.3");
     private static final int SCALE = 2;
     private final VacationDaysCalculator daysCalculator;
@@ -25,14 +31,44 @@ public class VacationPayService {
     }
 
     public VacationResponseDto calculateVacation(VacationRequestDto req) {
+
+        if (req == null) {
+            throw new BadRequestException("Request body is required");
+        }
+
         BigDecimal avgMonth = req.getAverageMonthlySalary();
+        if (avgMonth == null) {
+            throw new BadRequestException("averageMonthlySalary is required");
+        }
+        if (avgMonth.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("averageMonthlySalary must be greater than zero");
+        }
+
         int days = req.getVacationDays();
+        if (days <= 0) {
+            throw new BadRequestException("vacationDays must be greater than zero");
+        }
+
+        LocalDate startDate;
+        String startDateStr = req.getStartDate();
+        if (startDateStr == null || startDateStr.isEmpty()) {
+            startDate = LocalDate.now();
+        } else {
+            try {
+                startDate = DateParseUtil.parseDateWithFallback(startDateStr);
+            } catch (DateParseException ex) {
+                String msg = String.format("Failed to parse startDate '%s'",
+                        startDateStr);
+                log.info("Date parse error for input '{}': {}", startDateStr, ex.getMessage());
+                throw new DateParseException(msg, ex);
+            }
+        }
 
         BigDecimal dailyRate = calculateDailyRate(avgMonth);
         BigDecimal gross = dailyRate.multiply(BigDecimal.valueOf(days));
         BigDecimal net = applyTax(gross);
 
-        VacationPeriod vacationPeriod = daysCalculator.getVacationDateInfo(req.getStartDate(), req.getVacationDays());
+        VacationPeriod vacationPeriod = daysCalculator.getVacationDateInfo(startDate, req.getVacationDays());
         return new VacationResponseDto(
                 dailyRate,
                 gross.setScale(SCALE, RoundingMode.HALF_UP),
@@ -40,7 +76,8 @@ public class VacationPayService {
                 vacationPeriod.getPaidDays(),
                 vacationPeriod.getCalendarDays(),
                 vacationPeriod.getStartDate(),
-                vacationPeriod.getEndDate()
+                vacationPeriod.getEndDate(),
+                vacationPeriod.getHolidays()
         );
     }
 

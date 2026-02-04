@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class VacationResponseDto {
 
@@ -12,6 +13,7 @@ public class VacationResponseDto {
     private BigDecimal netPay;
     private int paidDays;
     private int calendarDays;
+    private List<LocalDate> holidays;
 
     @JsonFormat(pattern = "dd.MM.yyyy")
     private LocalDate startDate;
@@ -29,7 +31,8 @@ public class VacationResponseDto {
             Integer paidDays,
             Integer calendarDays,
             LocalDate startDate,
-            LocalDate endDate) {
+            LocalDate endDate,
+            List<LocalDate> holidays) {
 
         this.dailyRate = dailyRate;
         this.grossPay = grossPay;
@@ -38,6 +41,7 @@ public class VacationResponseDto {
         this.calendarDays = calendarDays;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.holidays = holidays;
     }
 
     public BigDecimal getDailyRate() { return dailyRate; }
@@ -47,5 +51,6 @@ public class VacationResponseDto {
     public int getCalendarDays() { return calendarDays; }
     public LocalDate getStartDate() { return startDate; }
     public LocalDate getEndDate() { return endDate; }
+    public List<LocalDate> getHolidays() { return holidays; }
 
 }
