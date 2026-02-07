@@ -20,7 +20,7 @@ public class VacationPayController {
         this.vacationPayService = vacationPayService;
     }
 
-    @GetMapping
+    @GetMapping("/calculate")
     public VacationResponseDto calculateVacation(
             @RequestParam BigDecimal averageMonthlySalary,
             @RequestParam int vacationDays,

@@ -13,6 +13,7 @@ public class VacationResponseDto {
     private BigDecimal netPay;
     private int paidDays;
     private int calendarDays;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd.MM.yyyy")
     private List<LocalDate> holidays;
 
     @JsonFormat(pattern = "dd.MM.yyyy")

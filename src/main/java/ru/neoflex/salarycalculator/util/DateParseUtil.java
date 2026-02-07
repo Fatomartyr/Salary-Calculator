@@ -5,15 +5,15 @@ import ru.neoflex.salarycalculator.exception.DateParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public final class DateParseUtil {
 
     public static final String DEFAULT_PATTERN = "dd.MM.yyyy";
 
-    private static final List<String> SUPPORTED_PATTERNS = Arrays.asList(
+    private static final List<String> SUPPORTED_PATTERNS = List.of(
             "yyyy-MM-dd",
             "dd-MM-yyyy",
             "dd/MM/yyyy",
@@ -23,10 +23,15 @@ public final class DateParseUtil {
     private static final DateTimeFormatter DEFAULT_FORMATTER =
             DateTimeFormatter.ofPattern(DEFAULT_PATTERN);
 
-    private static final List<DateTimeFormatter> SUPPORTED_FORMATTERS =
-            SUPPORTED_PATTERNS.stream()
-                    .map(DateTimeFormatter::ofPattern)
-                    .collect(Collectors.toList());
+    private static final List<DateTimeFormatter> ALL_FORMATTERS =
+            Stream.concat(
+                    Stream.of(DateTimeFormatter.ofPattern(DEFAULT_PATTERN)),
+                    SUPPORTED_PATTERNS.stream().map(DateTimeFormatter::ofPattern)
+            ).collect(Collectors.toUnmodifiableList());
+
+    private static final List<String> ALL_PATTERNS =
+            Stream.concat(Stream.of(DEFAULT_PATTERN), SUPPORTED_PATTERNS.stream())
+                    .collect(Collectors.toUnmodifiableList());
 
     private DateParseUtil() {
         throw new UnsupportedOperationException("Utility class cannot be instantiated");
@@ -70,18 +75,18 @@ public final class DateParseUtil {
         if (dateStr == null || dateStr.trim().isEmpty()) {
             throw new DateParseException("Date string cannot be null or empty");
         }
-
         String trimmed = dateStr.trim();
 
-        for (DateTimeFormatter formatter : SUPPORTED_FORMATTERS) {
+        for (DateTimeFormatter formatter : ALL_FORMATTERS) {
             try {
                 return LocalDate.parse(trimmed, formatter);
-            } catch (DateTimeParseException ignored) {}
+            } catch (DateTimeParseException ignored) {
+            }
         }
 
         throw new DateParseException(
                 String.format("Failed to parse date '%s'. Supported formats: %s",
-                        dateStr, String.join(", ", SUPPORTED_PATTERNS)));
+                        dateStr, String.join(", ", ALL_PATTERNS)));
     }
 
     public static String formatDate(LocalDate date, String pattern) {
