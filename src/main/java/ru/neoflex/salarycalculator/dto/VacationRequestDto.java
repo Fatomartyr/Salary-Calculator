@@ -1,11 +1,15 @@
 package ru.neoflex.salarycalculator.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.math.BigDecimal;
 
 public class VacationRequestDto {
-
+    @Schema(description = "Дата начала в формате dd.MM.yyyy", example = "01.03.2026")
     private String startDate;
+    @Schema(description = "Среднемесячная зарплата", example = "100000")
     private BigDecimal averageMonthlySalary;
+    @Schema(description = "Количество оплачиваемых дней отпуска", example = "14")
     private int vacationDays;
 
     public VacationRequestDto() {
