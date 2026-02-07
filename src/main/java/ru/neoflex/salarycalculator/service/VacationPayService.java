@@ -33,19 +33,23 @@ public class VacationPayService {
     public VacationResponseDto calculateVacation(VacationRequestDto req) {
 
         if (req == null) {
+            log.warn("Request body is null");
             throw new BadRequestException("Request body is required");
         }
 
         BigDecimal avgMonth = req.getAverageMonthlySalary();
         if (avgMonth == null) {
+            log.warn("averageMonthlySalary is null");
             throw new BadRequestException("averageMonthlySalary is required");
         }
         if (avgMonth.compareTo(BigDecimal.ZERO) <= 0) {
+            log.warn("Invalid averageMonthlySalary={}", avgMonth);
             throw new BadRequestException("averageMonthlySalary must be greater than zero");
         }
 
         int days = req.getVacationDays();
         if (days <= 0) {
+            log.warn("Invalid vacationDays={}", days);
             throw new BadRequestException("vacationDays must be greater than zero");
         }
 
@@ -53,23 +57,36 @@ public class VacationPayService {
         String startDateStr = req.getStartDate();
         if (startDateStr == null || startDateStr.isEmpty()) {
             startDate = LocalDate.now();
+            log.info("startDate not provided, using now={}", startDate);
         } else {
             try {
                 startDate = DateParseUtil.parseDateWithFallback(startDateStr);
+                log.info("Parsed startDate={} from '{}'",
+                        startDate, startDateStr);
             } catch (DateParseException ex) {
-                String msg = String.format("Failed to parse startDate '%s'",
-                        startDateStr);
+                log.info("Date parse error for input '{}': {}",
+                        startDateStr, ex.getMessage());
                 log.info("Date parse error for input '{}': {}", startDateStr, ex.getMessage());
-                throw new DateParseException(msg, ex);
+                throw new DateParseException(
+                        String.format("Failed to parse startDate '%s'", startDateStr), ex);
             }
         }
 
         BigDecimal dailyRate = calculateDailyRate(avgMonth);
         BigDecimal gross = dailyRate.multiply(BigDecimal.valueOf(days));
         BigDecimal net = applyTax(gross);
+        log.info("Calculated rates: dailyRate={}, gross={}, net={}", dailyRate, gross, net);
 
         VacationPeriod vacationPeriod = daysCalculator.getVacationDateInfo(startDate, req.getVacationDays());
-        return new VacationResponseDto(
+        log.info(
+                "Vacation period calculated: start={}, end={}, paidDays={}, calendarDays={}, holidays={}",
+                vacationPeriod.getStartDate(),
+                vacationPeriod.getEndDate(),
+                vacationPeriod.getPaidDays(),
+                vacationPeriod.getCalendarDays(),
+                vacationPeriod.getHolidays()
+        );
+        VacationResponseDto response = new VacationResponseDto(
                 dailyRate,
                 gross.setScale(SCALE, RoundingMode.HALF_UP),
                 net.setScale(SCALE, RoundingMode.HALF_UP),
@@ -79,6 +96,10 @@ public class VacationPayService {
                 vacationPeriod.getEndDate(),
                 vacationPeriod.getHolidays()
         );
+
+        log.info("calculateVacation finished successfully");
+
+        return response;
     }
 
     private BigDecimal calculateDailyRate(BigDecimal averageMonthlySalary) {
